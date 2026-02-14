@@ -1,0 +1,14 @@
+# Ignore Data Folders
+data/raw/
+data/processed/
+
+# Ignore Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Ignore Python Cache
+__pycache__/
+*.pyc
+
+# Ignore Virtual Environments
+venv/
+env/

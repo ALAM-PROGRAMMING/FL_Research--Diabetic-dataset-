@@ -1,0 +1,29 @@
+﻿1. Project Abstract & Objective
+Title: Robust Federated Learning for Cross-Continental Diabetes Prediction: A Privacy-Utility Trade-off Analysis. Goal: To publish an IEEE-grade (9/10 quality) research paper demonstrating that a decentralized Federated Learning (FL) framework can achieve comparable predictive performance to a Centralized Machine Learning model, while preserving 100% patient data privacy across distinct geographical healthcare datasets (US and India). The Core Metric: We do not chase raw Accuracy due to extreme medical class imbalance (~5.5:1 ratio of healthy to diabetic). We strictly evaluate models based on Recall (Class 1), F1-Score, and ROC-AUC.
+2. Dataset Architecture (Phase 1)
+We have successfully aligned and sanitized two distinct datasets into a unified 10-column mathematical framework. The data is locked in the data/processed/ folder.
+• US Dataset: us_cleaned_aligned.csv (253,680 rows)
+• India Dataset: india_cleaned_aligned.csv (5,292 rows)
+• Features (All strict int64): Age (1-13 buckets), Sex (0=F, 1=M), BMI, HighBP (0/1), HighChol (0/1), Smoker (0/1), HvyAlcoholConsump (0/1), PhysActivity (0/1), AnyHealthcare (0/1).
+• Target Variable: Diabetes_binary (0 = Healthy, 1 = Pre-diabetes/Diabetes).
+• QA Status: 100% bulletproof. Zero missing values, zero text strings, zero floats.
+3. Centralized Baselines (Phase 2)
+We built the "Upper Bound / High Score" centralized models using a merged US + India dataset. This represents a scenario where privacy laws do not exist.
+• Models Trained: Logistic Regression, Random Forest, XGBoost, and a Soft Voting Classifier.
+• The Imbalance Fix: We defeated the "Accuracy Trap" by enforcing strict class weights (class_weight='balanced' and scale_pos_weight=5.47).
+• Performance Benchmark: The baselines successfully achieved an ROC-AUC of ~0.80.
+• File Location: 2_baselines/centralized_training.ipynb.
+4. Current Phase: Federated Learning (Phase 3)
+This is the core contribution of the research. We are building a privacy-preserving FL network using PyTorch and the Flower (flwr) framework.
+• The Global Model: A PyTorch Multi-Layer Perceptron (MLP) optimized for tabular binary classification.
+• The Architecture: * server.py: Aggregates model weights using FedAvg (Federated Averaging).
+o client_us.py: Trains the PyTorch model locally strictly on US data.
+o client_india.py: Trains the PyTorch model locally strictly on Indian data.
+• The Goal: Prove that the Global Model can reach near 0.80 AUC without the US or Indian datasets ever leaving their local silos.
+5. Rules of Engagement for the AI Coding Agent
+When assisting with this codebase, you MUST adhere to the following rules:
+1. No Data Leakage: Always apply standard scaling after train/test splits.
+2. IEEE Quality: All generated visualizations must be publication-ready (e.g., plt.savefig(bbox_inches='tight'), properly labeled, distinct line styles for B&W printing).
+3. No Dummy Code: Do not write placeholder functions. Write production-ready, highly modular Python code.
+4. Context Awareness: Do not suggest anything that can harm my research paper. 
+

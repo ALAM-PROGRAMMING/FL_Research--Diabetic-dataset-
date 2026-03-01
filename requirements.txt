@@ -17,3 +17,5 @@ flwr-datasets>=0.6.0
 
 # Interpretability & Paper Polish
 shap>=0.42.0
+flwr[simulation]
+torch

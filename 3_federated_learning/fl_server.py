@@ -5,10 +5,9 @@ from flwr.common import Metrics
 def macro_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     """
     IEEE Research Fix: Macro-averaging treats every hospital as an equal 1-to-1 partner 
-    during evaluation, regardless of patient volume. This prevents the 250k US dataset 
-    from masking the performance of the 5k Indian dataset.
+    during evaluation, regardless of patient volume.
     """
-    num_clients = len(metrics) # Will be 2 (US and India)
+    num_clients = len(metrics) # Will be 2 (NY and TX)
     
     # Calculate straight averages, ignoring num_examples entirely
     macro_acc = sum([m["accuracy"] for _, m in metrics]) / num_clients
@@ -34,7 +33,7 @@ def main():
     strategy = fl.server.strategy.FedProx(
         fraction_fit=1.0,  # Sample 100% of available clients for training
         fraction_evaluate=1.0, # Sample 100% of available clients for evaluation
-        min_fit_clients=2, # Wait for both US and India before training begins
+        min_fit_clients=2, # Wait for both NY and TX before training begins
         min_evaluate_clients=2, # Wait for both to evaluate
         min_available_clients=2, # The server will not start the round until both connect
         evaluate_metrics_aggregation_fn=macro_average, # Our custom logic above

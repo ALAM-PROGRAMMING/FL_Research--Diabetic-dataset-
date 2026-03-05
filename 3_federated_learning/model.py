@@ -8,17 +8,15 @@ filterwarnings("ignore")
 
 # Define our robust Multi-Layer Perceptron (MLP) for binary classification
 class DiabetesMLP(nn.Module):
-    def __init__(self, input_dim=9):
+    def __init__(self, input_dim=21):
         super(DiabetesMLP, self).__init__()
         
-        # Widened to 64 neurons to capture complex tabular interactions
+        # Pure linear layers without normalization (Data scaled locally)
         self.layer1 = nn.Linear(input_dim, 64)
-        self.ln1 = nn.LayerNorm(64) # FL MAGIC BULLET: LayerNorm instead of BatchNorm
-        self.relu1 = nn.LeakyReLU(0.01) # Prevents dying neurons
-        self.dropout1 = nn.Dropout(0.1) # Reduced dropout for tabular data
+        self.relu1 = nn.LeakyReLU(0.01)
+        self.dropout1 = nn.Dropout(0.1)
         
         self.layer2 = nn.Linear(64, 32)
-        self.ln2 = nn.LayerNorm(32)
         self.relu2 = nn.LeakyReLU(0.01)
         self.dropout2 = nn.Dropout(0.1)
         
@@ -32,18 +30,13 @@ class DiabetesMLP(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.LayerNorm):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         x = self.layer1(x)
-        x = self.ln1(x)
         x = self.relu1(x)
         x = self.dropout1(x)
         
         x = self.layer2(x)
-        x = self.ln2(x)
         x = self.relu2(x)
         x = self.dropout2(x)
         

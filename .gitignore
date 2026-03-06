@@ -9,3 +9,6 @@ __pycache__/
 # Ignore Virtual Environments
 venv/
 env/
+output/models/
+*.pt
+*.pth

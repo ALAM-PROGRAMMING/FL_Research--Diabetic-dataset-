@@ -1,0 +1,15 @@
+{
+  "model_params": 3521,
+  "model_size_mb": 0.013431549072265625,
+  "num_clients": 2,
+  "num_rounds": 50,
+  "per_round_mb": 0.0537261962890625,
+  "total_fl_mb": 2.686309814453125,
+  "total_centralized_mb": 21.926926612854004,
+  "savings_mb": 19.24061679840088,
+  "savings_pct": 87.74880829455435,
+  "dataset_sizes_mb": {
+    "Hospital_NY.csv": 10.9636,
+    "Hospital_TX.csv": 10.9634
+  }
+}

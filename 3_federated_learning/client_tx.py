@@ -12,8 +12,8 @@ from model import DiabetesMLP, train, test
 torch.manual_seed(42)
 
 def load_data():
-    """Load and preprocess the India dataset strictly locally."""
-    print("Loading Indian Dataset (5k+ rows)...")
+    """Load and preprocess the TX dataset strictly locally."""
+    print("Loading TX Dataset (125k+ rows)...")
     
     # Strictly bind this client to the TX dataset only.
     df = pd.read_csv("../data/processed/Hospital_TX.csv")
@@ -32,7 +32,7 @@ def load_data():
     
     # Calculate pos_weight for handling the medical class imbalance natively
     pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
-    print(f"India Dataset Positional Weight Calculated: {pos_weight:.3f}")
+    print(f"TX Dataset Positional Weight Calculated: {pos_weight:.3f}")
     
     train_dataset = TensorDataset(torch.tensor(X_train, dtype=torch.float32), 
                                   torch.tensor(y_train, dtype=torch.float32))
@@ -45,7 +45,7 @@ def load_data():
     
     return train_loader, test_loader, pos_weight
 
-class IndiaHospitalClient(fl.client.NumPyClient):
+class TXHospitalClient(fl.client.NumPyClient):
     def __init__(self, model, train_loader, test_loader, pos_weight, device):
         self.model = model
         self.train_loader = train_loader
@@ -64,8 +64,8 @@ class IndiaHospitalClient(fl.client.NumPyClient):
         self.model.load_state_dict(state_dict, strict=True)
 
     def fit(self, parameters, config):
-        """Train the model on the local Indian dataset."""
-        print("  Client India: Received weights from server. Training with FedProx...")
+        """Train the model on the local TX dataset."""
+        print("  Client TX: Received weights from server. Training with FedProx...")
         self.set_parameters(parameters)
         
         # IEEE Standard FedProx: The parameters received ARE the global model.
@@ -80,13 +80,13 @@ class IndiaHospitalClient(fl.client.NumPyClient):
         return self.get_parameters(config={}), len(self.train_loader.dataset), {}
 
     def evaluate(self, parameters, config):
-        """Evaluate the global model on the local Indian test set."""
-        print("  Client India: Evaluating global model on local test set...")
+        """Evaluate the global model on the local TX test set."""
+        print("  Client TX: Evaluating global model on local test set...")
         self.set_parameters(parameters)
         
         loss, accuracy, auc, recall, f1 = test(self.model, self.test_loader, self.device)
         
-        print(f"    India Eval -> Loss: {loss:.4f}, AUC: {auc:.4f}, F1: {f1:.4f}")
+        print(f"    TX Eval -> Loss: {loss:.4f}, AUC: {auc:.4f}, F1: {f1:.4f}")
         
         return loss, len(self.test_loader.dataset), {
             "accuracy": accuracy, 
@@ -98,9 +98,9 @@ class IndiaHospitalClient(fl.client.NumPyClient):
 
 def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(f"India Client running on device: {device}")
-    
-    # Loads specifically the India dataset to simulate 100% data privacy
+    print(f"TX Client running on device: {device}")
+
+    # Loads strictly the TX dataset — 100% local data privacy
     train_loader, test_loader, pos_weight = load_data()
     
     model = DiabetesMLP(input_dim=21).to(device)
@@ -108,7 +108,7 @@ def main():
     # Start the Flower Client connected to localhost
     fl.client.start_client(
         server_address="127.0.0.1:8080",
-        client=IndiaHospitalClient(model, train_loader, test_loader, pos_weight, device).to_client(),
+        client=TXHospitalClient(model, train_loader, test_loader, pos_weight, device).to_client(),
     )
 
 if __name__ == "__main__":

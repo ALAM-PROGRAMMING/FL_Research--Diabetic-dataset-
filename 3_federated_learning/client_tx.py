@@ -15,8 +15,16 @@ def load_data():
     """Load and preprocess the TX dataset strictly locally."""
     print("Loading TX Dataset (125k+ rows)...")
     
-    # Strictly bind this client to the TX dataset only.
-    df = pd.read_csv("../data/processed/Hospital_TX.csv")
+    # Strictly bind this client to the TX dataset. Use FL_DATA_MODE to pick the split.
+    mode = os.environ.get("FL_DATA_MODE", "iid").lower()
+    if mode == "noniid":
+        csv_path = "../data/processed/Hospital_TX_NONIID.csv"
+        print(f"Loading TX Dataset (NON-IID Split) from {csv_path}")
+    else:
+        csv_path = "../data/processed/Hospital_TX_IID.csv"
+        print(f"Loading TX Dataset (IID Split) from {csv_path}")
+        
+    df = pd.read_csv(csv_path)
     
     X = df.drop(columns=["Diabetes_binary"]).values
     y = df["Diabetes_binary"].values

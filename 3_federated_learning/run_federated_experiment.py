@@ -32,7 +32,8 @@ from pathlib import Path
 SCRIPT_DIR   = Path(__file__).resolve().parent
 ROOT_DIR     = SCRIPT_DIR.parent
 HISTORY_PATH = ROOT_DIR / "output" / "fl_training_history.json"
-RUNS_DIR     = ROOT_DIR / "output" / "experiment_runs"
+mode         = os.environ.get("FL_DATA_MODE", "iid").lower()
+RUNS_DIR     = ROOT_DIR / "output" / "experiment_runs" / mode
 PYTHON       = sys.executable   # Use the same venv Python as the caller
 
 SERVER_SCRIPT    = str(SCRIPT_DIR / "fl_server.py")
@@ -112,33 +113,33 @@ def run_one_experiment(run_number: int) -> Path:
 
 def compute_summary(run_files: list) -> dict:
     """
-    Aggregate AUC, Loss from all run files and compute mean ± std
-    of the final-round value for each metric.
+    Aggregate metrics from all run files and compute mean ± std
+    of the final-round value.
     """
-    final_aucs  = []
-    final_losses = []
+    final_vals = {"auc": [], "loss": [], "accuracy": [], "recall": [], "f1": []}
 
     for path in run_files:
         with open(path) as f:
             data = json.load(f)
-        if data.get("auc"):
-            final_aucs.append(data["auc"][-1])
-        if data.get("loss"):
-            final_losses.append(data["loss"][-1])
+        for k in final_vals:
+            if data.get(k):
+                final_vals[k].append(data[k][-1])
 
     import statistics
+    def _stats(vals):
+        return {
+            "values": vals,
+            "mean":   statistics.mean(vals)   if vals else None,
+            "stdev":  statistics.stdev(vals)  if len(vals) > 1 else 0,
+        }
+
     summary = {
         "num_runs":       len(run_files),
-        "final_auc": {
-            "values": final_aucs,
-            "mean":   statistics.mean(final_aucs)   if final_aucs   else None,
-            "stdev":  statistics.stdev(final_aucs)  if len(final_aucs) > 1  else 0,
-        },
-        "final_loss": {
-            "values": final_losses,
-            "mean":   statistics.mean(final_losses)  if final_losses  else None,
-            "stdev":  statistics.stdev(final_losses) if len(final_losses) > 1 else 0,
-        },
+        "final_auc":      _stats(final_vals["auc"]),
+        "final_loss":     _stats(final_vals["loss"]),
+        "final_accuracy": _stats(final_vals["accuracy"]),
+        "final_recall":   _stats(final_vals["recall"]),
+        "final_f1":       _stats(final_vals["f1"]),
     }
     return summary
 

@@ -16,8 +16,16 @@ def load_data():
     """Load and preprocess the US dataset strictly locally."""
     print("Loading US Dataset (250k+ rows)...")
     
-    # Strictly bind this client to the NY dataset only. True decentralization.
-    df = pd.read_csv("../data/processed/Hospital_NY.csv")
+    # Strictly bind this client to the NY dataset. Use FL_DATA_MODE to pick the split.
+    mode = os.environ.get("FL_DATA_MODE", "iid").lower()
+    if mode == "noniid":
+        csv_path = "../data/processed/Hospital_NY_NONIID.csv"
+        print(f"Loading US Dataset (NON-IID Split) from {csv_path}")
+    else:
+        csv_path = "../data/processed/Hospital_NY_IID.csv"
+        print(f"Loading US Dataset (IID Split) from {csv_path}")
+        
+    df = pd.read_csv(csv_path)
     
     X = df.drop(columns=["Diabetes_binary"]).values
     y = df["Diabetes_binary"].values

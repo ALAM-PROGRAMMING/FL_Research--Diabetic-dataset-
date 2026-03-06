@@ -121,8 +121,17 @@ def save_history(history) -> None:
     loss_values = [float(v) for _, v in history.losses_distributed]
 
     auc_values = []
+    acc_values = []
+    recall_values = []
+    f1_values = []
     if "auc" in history.metrics_distributed:
         auc_values = [float(v) for _, v in history.metrics_distributed["auc"]]
+        if "accuracy" in history.metrics_distributed:
+            acc_values = [float(v) for _, v in history.metrics_distributed["accuracy"]]
+        if "recall" in history.metrics_distributed:
+            recall_values = [float(v) for _, v in history.metrics_distributed["recall"]]
+        if "f1" in history.metrics_distributed:
+            f1_values = [float(v) for _, v in history.metrics_distributed["f1"]]
     elif hasattr(history, "metrics_distributed_fit") and "auc" in history.metrics_distributed_fit:
         auc_values = [float(v) for _, v in history.metrics_distributed_fit["auc"]]
 
@@ -130,6 +139,9 @@ def save_history(history) -> None:
         "rounds":     rounds_loss,
         "loss":       loss_values,
         "auc":        auc_values,
+        "accuracy":   acc_values,
+        "recall":     recall_values,
+        "f1":         f1_values,
         "num_rounds": len(rounds_loss),
     }
 
